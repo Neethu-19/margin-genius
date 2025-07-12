@@ -1,5 +1,4 @@
-# Deploy static content to GitHub Pages
-name: Deploy static content to Pages
+name: Deploy Vite App to GitHub Pages
 
 on:
   push:
@@ -16,24 +15,38 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  build-and-deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./walmart/frontend
+
+      - name: Build with Vite
+        run: npm run build
+        working-directory: ./walmart/frontend
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload artifact
+      - name: Upload dist folder
         uses: actions/upload-pages-artifact@v3
         with:
-          # ✅ Correct path
-          path: 'walmart/frontend'
+          path: ./walmart/frontend/dist
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
